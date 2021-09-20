@@ -1,0 +1,30 @@
+# next.js build output
+.next
+# dotenv environment variables file (build for Zeit Now)
+.env
+.env.build
+.idea
+# Dependency directories
+node_modules/
+# Logs
+npm-debug.log*
+#Test coverage reports
+coverage
+
+.DS_Store
+.vercel
+.vscode
+.eslintcache
+
+.husky
+src
+tests
+.gitignore
+.npmignore
+.eslintignore
+.eslintrc.js
+.prettierignore
+commitlint.config.js
+jest.config.json
+tsconfig.jest.json
+tsconfig.json
