@@ -25,20 +25,27 @@ export class NextApiConfigurableHandler {
   }
 
   async run(request: NextApiRequest, response: NextApiResponse): Promise<void> {
+    let isResponded = false;
+    const { send } = response;
+
+    response.send = (...args) => {
+      isResponded = true;
+      return send.call(response, ...args);
+    };
+
     const result = await pipeAsyncWithContext(
       ...this.middlewares,
       ...this.handler
     )(request, response);
 
-    if (!response.finished) {
+    if (!isResponded) {
       response.json(result);
     }
   }
 }
 
-const pipeAsyncWithContext =
-  (...fns: NextApiRouterHandlerFn[]) =>
-  async (request: NextApiRequest, response: NextApiResponse) => {
+function pipeAsyncWithContext(...fns: NextApiRouterHandlerFn[]) {
+  return async (request: NextApiRequest, response: NextApiResponse) => {
     const context: NextApiRouterHandlerFnCtx = {};
 
     try {
@@ -62,3 +69,4 @@ const pipeAsyncWithContext =
       throw extendedError;
     }
   };
+}

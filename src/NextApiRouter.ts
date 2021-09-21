@@ -1,7 +1,7 @@
 import EventEmitter from "events";
 import type { NextApiHandler } from "next";
 import assert from "http-assert";
-import { isHttpError } from "http-errors";
+import createError, { isHttpError } from "http-errors";
 
 import { NextApiRouterRegistry } from "./NextApiRouterRegistry";
 import {
@@ -67,9 +67,7 @@ export class NextApiRouter {
           this.events.emit("error", error);
         }
 
-        this.logger.error(
-          NODE_ENV === "development" ? error : JSON.stringify(error)
-        );
+        this.logError(error as Error);
 
         if (isHttpError(error)) {
           return response.status(error.status).json({
@@ -86,6 +84,15 @@ export class NextApiRouter {
         });
       }
     };
+  }
+
+  private logError(error: Error): void {
+    const loggerPayload = isHttpError(error)
+      ? createError(error.statusCode, error.message)
+      : error;
+    this.logger.error(
+      NODE_ENV === "development" ? loggerPayload : JSON.stringify(loggerPayload)
+    );
   }
 
   private register(
