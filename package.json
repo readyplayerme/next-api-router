@@ -1,6 +1,6 @@
 {
   "name": "@readyplayerme/next-api-router",
-  "version": "1.0.7",
+  "version": "1.0.0",
   "description": "",
   "keywords": [],
   "repository": {
@@ -8,7 +8,7 @@
     "url": "https://github.com/readyplayerme/next-api-router"
   },
   "license": "ISC",
-  "author": "",
+  "author": "Readyplayerme Team",
   "main": "lib/index.js",
   "scripts": {
     "build": "rm -rf lib && tsc",
