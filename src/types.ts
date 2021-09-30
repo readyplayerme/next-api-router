@@ -1,10 +1,9 @@
 import { NextApiRequest, NextApiResponse } from "next";
 
+import { NextApiRouterHandlerFnCtx } from "@readyplayerme/next-api-router";
 import type { NextApiConfigurableHandler } from "./NextApiConfigurableHandler";
 
 export type NextApiRouterMethod = "post" | "get" | "put" | "patch" | "delete";
-
-export type NextApiRouterHandlerFnCtx = Record<string, any>;
 
 export declare type NextApiRouterHandlerFn<T = any> = (
   this: NextApiRouterHandlerFnCtx,

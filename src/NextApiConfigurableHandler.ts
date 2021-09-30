@@ -2,10 +2,8 @@ import { NextApiRequest, NextApiResponse } from "next";
 import createError, { HttpError } from "http-errors";
 import castArray from "lodash/castArray";
 
-import type {
-  NextApiRouterHandlerFn,
-  NextApiRouterHandlerFnCtx,
-} from "./types";
+import { NextApiRouterHandlerFnCtx } from "@readyplayerme/next-api-router";
+import type { NextApiRouterHandlerFn } from "./types";
 
 export class NextApiConfigurableHandler {
   private middlewares: NextApiRouterHandlerFn[];
