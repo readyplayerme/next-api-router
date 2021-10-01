@@ -1,7 +1,7 @@
 declare module "@readyplayerme/next-api-router" {
-  import { NextApiRouter } from "./lib";
+  import { NextApiRouter, NextApiRouterHandlerFn } from "./lib";
 
-  export { NextApiRouter };
+  export { NextApiRouter, NextApiRouterHandlerFn };
 
   // eslint-disable-next-line @typescript-eslint/no-empty-interface
   export interface NextApiRouterHandlerFnCtx {}
