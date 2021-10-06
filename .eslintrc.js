@@ -155,5 +155,11 @@ module.exports = {
         "import/no-unresolved": "off",
       },
     },
+    {
+      files: ["tests/**/*.ts"],
+      parserOptions: {
+        project: "./tests/tsconfig.json",
+      },
+    },
   ],
 };

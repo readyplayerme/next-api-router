@@ -1,6 +1,6 @@
 {
   "name": "@readyplayerme/next-api-router",
-  "version": "1.0.5",
+  "version": "1.1.4",
   "description": "",
   "keywords": [],
   "repository": {
@@ -26,6 +26,8 @@
     ]
   },
   "dependencies": {
+    "ajv": "^8.6.3",
+    "ajv-formats": "^2.1.1",
     "http-assert": "^1.5.0",
     "http-errors": "^1.8.0",
     "lodash": "^4.17.21",
