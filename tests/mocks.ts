@@ -3,10 +3,10 @@ import { NextApiResponse } from "next";
 export const mockResponse = (): NextApiResponse => {
   const sendOriginal = jest.fn();
   const response = {
-    finished: false,
+    writableEnded: false,
     status: jest.fn(() => response),
     json: jest.fn((value: Record<string, any>) => {
-      response.finished = true;
+      (response as any).writableEnded = true;
       response.send(value);
     }),
     send: sendOriginal,
