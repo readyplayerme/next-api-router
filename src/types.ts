@@ -1,4 +1,5 @@
 import { NextApiRequest, NextApiResponse } from "next";
+import { AnySchema } from "ajv";
 
 import { NextApiRouterHandlerFnCtx } from "@readyplayerme/next-api-router";
 import type { NextApiConfigurableHandler } from "./NextApiConfigurableHandler";
@@ -11,8 +12,17 @@ export declare type NextApiRouterHandlerFn<T = any> = (
   res: NextApiResponse<T>
 ) => T | Promise<T>;
 
+export interface ValidationSchema {
+  query?: AnySchema;
+  body?: AnySchema;
+  response?: {
+    [key: number]: AnySchema;
+  };
+}
+
 export interface NextApiConfigurableHandlerOptions {
-  middlewares: NextApiRouterHandlerFn[];
+  schema?: ValidationSchema;
+  middlewares?: NextApiRouterHandlerFn[];
   handler: NextApiRouterHandlerFn | NextApiRouterHandlerFn[];
 }
 
