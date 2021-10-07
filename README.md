@@ -14,8 +14,50 @@ Simple utility allowing to route API endpoints by http methods with middleware f
 * `#post(handler)`/`#get(handler)`/`#put(handler)`/`#patch(handler)`/`#delete(handler)` - adds a handler to requests with respective method. Handlers return value is sent as a response with status 200 unless response is already sent explicitly using Nextjs API. Handler is a function receiving arguments as follows:
     * `request: NextApiRequest`
     * `response: NextApiResponse` 
-* `#init()' - initializer returning a Nextjs API handler which should exported by default from a Nextjs route endpoint file
-* `#events' - event emitter
+* `#init()` - initializer returning a Nextjs API handler which should exported by default from a Nextjs route endpoint file
+* `#events` - event emitter
+
+### Handler
+Route handler can be added as a function or a configuration object:
+
+```typescript
+export declare type NextApiRouterHandlerFn<T = any> = (
+  this: NextApiRouterHandlerFnCtx,
+  req: NextApiRequest,
+  res: NextApiResponse<T>
+) => T | Promise<T>;
+```
+
+or
+
+```typescript
+export interface NextApiConfigurableHandlerOptions {
+  schema?: ValidationSchema;
+  middlewares?: NextApiRouterHandlerFn[];
+  handler: NextApiRouterHandlerFn | NextApiRouterHandlerFn[];
+}
+```
+
+Schema is jsonschema validating request/response payloads. Validation is omitted if schema is not provided. It is responding with `400` if request payload is not valid and `500` for response.
+```typescript
+export interface ValidationSchema {
+  query?: AnySchema;
+  body?: AnySchema;
+  response?: {
+    [key: number]: AnySchema;
+  };
+}
+```
+It is possible to separately validate `query`, `body` and response payload by response code. E.g. the schema as follows is only validating response payloads with status `200`. This schema is filtering out fields that are not specified and tries to cast types.
+```typescript
+const schema = {
+  response: {
+    200: schema
+  }
+}
+```
+
+jsonschema is implemented using [ajv](https://ajv.js.org/) with [ajv-formats](https://www.npmjs.com/package/ajv-formats) included.
 
 ## Usage notes
 * it is possible to add multiple middlewares which would be executed in order of addition
@@ -34,6 +76,10 @@ const router = NextApiRouter.create() // or new NextApiRouter()
     .post(function (request: NextApiRequest, response: NextApiResponse) {
       return this.user // respond with some payload
     })
+    // this middleware is only added to a subsequent handerlr.
+    // E.g. it is called before get handler below but not the post one above
+    .use(middleware)
+    .get(handler)
 
 router.events.on("error", (error) => /* process error */)
 
