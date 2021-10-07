@@ -85,3 +85,7 @@ router.events.on("error", (error) => /* process error */)
 
 export default router.init()
 ```
+
+## Roadmap
+
+* add endpoint generic typing for request
