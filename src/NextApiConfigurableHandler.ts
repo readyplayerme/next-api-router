@@ -66,7 +66,7 @@ export class NextApiConfigurableHandler {
       ...this.handler
     )(request, response);
 
-    if (!response.writableEnded) {
+    if (!response.headersSent) {
       response.json(result);
     }
   }
@@ -141,7 +141,7 @@ function pipeAsyncWithContext(...fns: NextApiRouterHandlerFn[]) {
     try {
       return await fns.reduce(async (prev, next) => {
         await prev;
-        if (response.writableEnded) {
+        if (response.headersSent) {
           return Promise.resolve();
         }
 
