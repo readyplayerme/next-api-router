@@ -20,10 +20,17 @@ export interface ValidationSchema {
   };
 }
 
+export interface NextApiConfigurableHandlerConfig {
+  [key: string]: any;
+  methodName?: string;
+  url?: string;
+}
+
 export interface NextApiConfigurableHandlerOptions {
+  handler: NextApiRouterHandlerFn | NextApiRouterHandlerFn[];
   schema?: ValidationSchema;
   middlewares?: NextApiRouterHandlerFn[];
-  handler: NextApiRouterHandlerFn | NextApiRouterHandlerFn[];
+  config?: NextApiConfigurableHandlerConfig;
 }
 
 export type NextApiRouterHandler =
@@ -38,4 +45,11 @@ export interface NextApiRouterHandlersRegistrationOptions {
   method: NextApiRouterMethod;
   middlewares: NextApiRouterHandlerFn[];
   handler: NextApiRouterHandler;
+}
+
+export interface EndpointSignature {
+  methodName?: string;
+  query?: AnySchema;
+  body?: AnySchema;
+  response?: AnySchema;
 }

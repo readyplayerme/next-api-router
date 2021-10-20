@@ -1,6 +1,5 @@
 import { NextApiRequest, NextApiResponse } from "next";
-import createError, {
-  HttpError,
+import {
   BadRequest,
   InternalServerError,
   HttpErrorConstructor,
@@ -9,9 +8,15 @@ import Ajv, { AnySchema } from "ajv";
 import addFormats from "ajv-formats";
 import castArray from "lodash/castArray";
 import cloneDeep from "lodash/cloneDeep";
+import pickBy from "lodash/pickBy";
 
-import { NextApiRouterHandlerFnCtx } from "@readyplayerme/next-api-router";
-import type { NextApiRouterHandlerFn, ValidationSchema } from "./types";
+import type { NextApiRouterHandlerFnCtx } from "@readyplayerme/next-api-router";
+import type {
+  NextApiConfigurableHandlerConfig,
+  NextApiRouterHandlerFn,
+  ValidationSchema,
+  EndpointSignature,
+} from "./types";
 
 const bodyValidator = new Ajv();
 addFormats(bodyValidator);
@@ -38,22 +43,31 @@ export class NextApiConfigurableHandler {
 
   private schema?: ValidationSchema;
 
+  private config?: NextApiConfigurableHandlerConfig;
+
   // TODO: add jsonschema validations for body, query and response
   constructor({
     middlewares,
     handler,
     schema,
+    config,
   }: {
     middlewares: NextApiRouterHandlerFn[];
     handler: NextApiRouterHandlerFn | NextApiRouterHandlerFn[];
     schema?: ValidationSchema;
+    config?: NextApiConfigurableHandlerConfig;
   }) {
     this.middlewares = middlewares;
     this.handler = castArray(handler);
     this.schema = schema;
+    this.config = config;
   }
 
-  async run(request: NextApiRequest, response: NextApiResponse): Promise<void> {
+  async run(
+    ctx: NextApiRouterHandlerFnCtx,
+    request: NextApiRequest,
+    response: NextApiResponse
+  ): Promise<void> {
     const { send } = response;
 
     this.validateRequest(request);
@@ -61,10 +75,12 @@ export class NextApiConfigurableHandler {
     response.send = (value) =>
       send.call(response, this.validateResponse(response.statusCode, value));
 
+    Object.assign(ctx, cloneDeep(this.config));
+
     const result = await pipeAsyncWithContext(
       ...this.middlewares,
       ...this.handler
-    )(request, response);
+    )(ctx, request, response);
 
     if (!response.headersSent) {
       response.json(result);
@@ -107,6 +123,18 @@ export class NextApiConfigurableHandler {
 
     return data;
   }
+
+  getSignature(): EndpointSignature {
+    return {
+      methodName: this.config?.methodName,
+      query: this.schema?.query,
+      body: this.schema?.body,
+      response: pickBy(
+        this.schema?.response,
+        (_, key) => key.startsWith("2") && key.length === 3
+      ),
+    };
+  }
 }
 
 function tryToValidate({
@@ -135,28 +163,16 @@ function tryToValidate({
 }
 
 function pipeAsyncWithContext(...fns: NextApiRouterHandlerFn[]) {
-  return async (request: NextApiRequest, response: NextApiResponse) => {
-    const context: NextApiRouterHandlerFnCtx = {};
+  return async (
+    initCtx: Record<string, any> = {},
+    request: NextApiRequest,
+    response: NextApiResponse
+  ) => fns.reduce(async (prev, next) => {
+      await prev;
+      if (response.headersSent) {
+        return Promise.resolve();
+      }
 
-    try {
-      return await fns.reduce(async (prev, next) => {
-        await prev;
-        if (response.headersSent) {
-          return Promise.resolve();
-        }
-
-        return next.call(context, request, response);
-      }, Promise.resolve());
-    } catch (error) {
-      const extendedError =
-        error instanceof HttpError
-          ? error
-          : createError(500, (error as Error).message);
-      extendedError.ctx = context;
-      extendedError.request = request;
-      extendedError.response = response;
-
-      throw extendedError;
-    }
-  };
+      return next.call(initCtx, request, response);
+    }, Promise.resolve());
 }

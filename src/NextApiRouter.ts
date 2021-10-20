@@ -1,34 +1,31 @@
 import EventEmitter from "events";
-import type { NextApiHandler } from "next";
+import type { NextApiHandler, NextApiRequest, NextApiResponse } from "next";
 import assert from "http-assert";
-import createError, { isHttpError } from "http-errors";
+import { isHttpError } from "http-errors";
 
+import type { NextApiRouterHandlerFnCtx } from "@readyplayerme/next-api-router";
 import { NextApiRouterRegistry } from "./NextApiRouterRegistry";
-import {
+import type {
+  EndpointSignature,
   NextApiRouterHandler,
   NextApiRouterHandlerFn,
   NextApiRouterMethod,
 } from "./types";
 
-const { NODE_ENV } = process.env;
+interface NextApiHandlerWithSignatures extends NextApiHandler {
+  getSignatures(): any;
+}
 
 export class NextApiRouter {
   static create(): NextApiRouter {
     return new NextApiRouter();
   }
 
-  private logger = console;
-
   private handlers = new NextApiRouterRegistry();
 
   private middlewares: NextApiRouterHandlerFn[] = [];
 
   events = new EventEmitter();
-
-  setLogger(logger: Console): this {
-    this.logger = logger;
-    return this;
-  }
 
   use(middleware: NextApiRouterHandlerFn): this {
     this.middlewares.push(middleware);
@@ -55,44 +52,41 @@ export class NextApiRouter {
     return this.register("delete", handlerOrHandlerOptions);
   }
 
-  init(): NextApiHandler {
-    return async (request, response) => {
-      try {
-        const handler = this.handlers.match(request.method);
-        assert(handler, 404);
+  init(): NextApiHandlerWithSignatures {
+    const handler = (request: NextApiRequest, response: NextApiResponse) =>
+      this.run(request, response);
+    handler.getSignatures = this.getSignatures.bind(this);
 
-        return await handler.run(request, response);
-      } catch (error) {
-        if (this.events.listenerCount("error")) {
-          this.events.emit("error", error);
-        }
-
-        this.logError(error as Error);
-
-        if (isHttpError(error)) {
-          return response.status(error.status).json({
-            type: error.constructor.name,
-            message: error.message,
-            status: error.status,
-          });
-        }
-
-        return response.status(500).json({
-          status: 500,
-          message: "internal server error occurred",
-          type: "InternalServerError",
-        });
-      }
-    };
+    return handler;
   }
 
-  private logError(error: Error): void {
-    const loggerPayload = isHttpError(error)
-      ? createError(error.statusCode, error.message)
-      : error;
-    this.logger.error(
-      NODE_ENV === "development" ? loggerPayload : JSON.stringify(loggerPayload)
-    );
+  async run(request: NextApiRequest, response: NextApiResponse) {
+    const context: NextApiRouterHandlerFnCtx = {};
+
+    try {
+      const handler = this.handlers.match(request.method);
+      assert(handler, 404);
+
+      return await handler.run(context, request, response);
+    } catch (error) {
+      if (this.events.listenerCount("error")) {
+        this.events.emit("error", error, context, request, response);
+      }
+
+      if (isHttpError(error)) {
+        return response.status(error.status).json({
+          type: error.constructor.name,
+          message: error.message,
+          status: error.status,
+        });
+      }
+
+      return response.status(500).json({
+        status: 500,
+        message: "internal server error occurred",
+        type: "InternalServerError",
+      });
+    }
   }
 
   private register(
@@ -106,5 +100,9 @@ export class NextApiRouter {
     });
 
     return this;
+  }
+
+  getSignatures(): EndpointSignature[] {
+    return this.handlers.getSignatures();
   }
 }

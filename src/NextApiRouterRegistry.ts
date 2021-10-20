@@ -5,6 +5,7 @@ import type {
   NextApiRouterHandlersRegistry,
   NextApiRouterHandlersRegistrationOptions,
   NextApiRouterMethod,
+  EndpointSignature,
 } from "./types";
 
 export class NextApiRouterRegistry {
@@ -33,5 +34,12 @@ export class NextApiRouterRegistry {
     }
 
     return this.registry[method.toLowerCase() as NextApiRouterMethod];
+  }
+
+  getSignatures(): EndpointSignature[] {
+    return Object.keys(this.registry).map((method) => ({
+      method,
+      ...this.registry[method as NextApiRouterMethod]?.getSignature(),
+    }));
   }
 }
