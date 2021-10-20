@@ -84,17 +84,15 @@ describe("NextApiRouter", () => {
       const run = jest.spyOn(handler, "run").mockResolvedValue(undefined);
       await NextApiRouter.create().init()(request, response);
 
-      expect(run).toHaveBeenCalledWith(request, response);
+      expect(run).toHaveBeenCalledWith({}, request, response);
     });
 
     it("responds with 404 if handler is not found", async () => {
       const request = { method: "POST" } as NextApiRequest;
       const response = mockResponse();
-      const logger = { error: jest.fn() } as unknown as Console;
-      await NextApiRouter.create().setLogger(logger).init()(request, response);
+      await NextApiRouter.create().init()(request, response);
 
       expect(response.status).toHaveBeenCalledWith(404);
-      expect(logger.error).toHaveBeenCalledWith(new NotFound());
       expect(response.json).toHaveBeenCalledWith({
         type: "NotFoundError",
         message: "Not Found",
@@ -114,11 +112,9 @@ describe("NextApiRouter", () => {
         .mockReturnValue(handler);
       const error = new Error("unhandled");
       jest.spyOn(handler, "run").mockRejectedValue(error);
-      const logger = { error: jest.fn() } as unknown as Console;
-      await NextApiRouter.create().setLogger(logger).init()(request, response);
+      await NextApiRouter.create().init()(request, response);
 
       expect(response.status).toHaveBeenCalledWith(500);
-      expect(logger.error).toHaveBeenCalledWith(error);
       expect(response.json).toHaveBeenCalledWith({
         type: "InternalServerError",
         message: "internal server error occurred",
@@ -140,10 +136,15 @@ describe("NextApiRouter", () => {
       jest.spyOn(handler, "run").mockRejectedValue(error);
       jest.spyOn(EventEmitter.prototype, "emit").mockReturnValue(true);
       jest.spyOn(EventEmitter.prototype, "listenerCount").mockReturnValue(1);
-      const logger = { error: jest.fn() } as unknown as Console;
-      await NextApiRouter.create().setLogger(logger).init()(request, response);
+      await NextApiRouter.create().init()(request, response);
 
-      expect(EventEmitter.prototype.emit).toHaveBeenCalledWith("error", error);
+      expect(EventEmitter.prototype.emit).toHaveBeenCalledWith(
+        "error",
+        error,
+        {},
+        request,
+        response
+      );
     });
   });
 });

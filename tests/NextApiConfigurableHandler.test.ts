@@ -16,7 +16,7 @@ describe("NextApiConfigurableHandler", () => {
     const request = {} as NextApiRequest;
     const response = mockResponse();
 
-    await configurableHandler.run(request, response);
+    await configurableHandler.run({}, request, response);
 
     expect(middleware).toHaveBeenCalled();
     expect(handler).toHaveBeenCalled();
@@ -34,7 +34,7 @@ describe("NextApiConfigurableHandler", () => {
     const request = {} as NextApiRequest;
     const response = mockResponse();
 
-    await configurableHandler.run(request, response);
+    await configurableHandler.run({}, request, response);
 
     expect(handler).not.toHaveBeenCalled();
   });
@@ -57,7 +57,7 @@ describe("NextApiConfigurableHandler", () => {
     });
     const request = {} as NextApiRequest;
     const response = mockResponse();
-    await configurableHandler.run(request, response);
+    await configurableHandler.run({}, request, response);
 
     expect(response.json).toHaveBeenCalledWith(user);
   });
@@ -73,35 +73,9 @@ describe("NextApiConfigurableHandler", () => {
     });
     const request = {} as NextApiRequest;
     const response = mockResponse();
-    await configurableHandler.run(request, response);
+    await configurableHandler.run({}, request, response);
 
     expect(response.json).toHaveBeenCalledWith(user);
-  });
-
-  it("extends error with context, request and response", async () => {
-    const user = { name: "John Doe" };
-    function handler(this: NextApiRouterHandlerFnCtx) {
-      (this as any).user = user;
-      throw createError(404);
-    }
-    const configurableHandler = new NextApiConfigurableHandler({
-      middlewares: [],
-      handler,
-    });
-    const request = {} as NextApiRequest;
-    const response = mockResponse();
-
-    try {
-      await configurableHandler.run(request, response);
-    } catch (error) {
-      expect(error).toBeInstanceOf(HttpError);
-
-      if (error instanceof HttpError) {
-        expect(error.request).toBe(request);
-        expect(error.response).toBe(response);
-        expect(error.ctx).toMatchObject({ user });
-      }
-    }
   });
 
   it("fails with body validation error", async () => {
@@ -123,7 +97,9 @@ describe("NextApiConfigurableHandler", () => {
     } as NextApiRequest;
     const response = mockResponse();
 
-    await expect(configurableHandler.run(request, response)).rejects.toEqual(
+    await expect(
+      configurableHandler.run({}, request, response)
+    ).rejects.toEqual(
       new BadRequest("'body' must have required property 'foo'")
     );
   });
@@ -147,7 +123,9 @@ describe("NextApiConfigurableHandler", () => {
     } as NextApiRequest;
     const response = mockResponse();
 
-    await expect(configurableHandler.run(request, response)).rejects.toEqual(
+    await expect(
+      configurableHandler.run({}, request, response)
+    ).rejects.toEqual(
       new BadRequest("'query' must have required property 'foo'")
     );
   });
@@ -173,7 +151,9 @@ describe("NextApiConfigurableHandler", () => {
     const request = {} as NextApiRequest;
     const response = mockResponse();
 
-    await expect(configurableHandler.run(request, response)).rejects.toEqual(
+    await expect(
+      configurableHandler.run({}, request, response)
+    ).rejects.toEqual(
       new BadRequest("'response' must have required property 'foo'")
     );
   });
@@ -203,7 +183,7 @@ describe("NextApiConfigurableHandler", () => {
     const request = {} as NextApiRequest;
     const response = mockResponse();
 
-    await configurableHandler.run(request, response);
+    await configurableHandler.run({}, request, response);
 
     expect((response as any).sendOriginal).toHaveBeenCalledWith({ foo: "1" });
   });
