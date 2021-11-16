@@ -20,13 +20,19 @@ import type {
 
 const bodyValidator = new Ajv();
 addFormats(bodyValidator);
+bodyValidator.addKeyword("kind");
+bodyValidator.addKeyword("modifier");
 const queryValidator = new Ajv({ coerceTypes: true });
+queryValidator.addKeyword("kind");
+queryValidator.addKeyword("modifier");
 addFormats(queryValidator);
 const responseValidator = new Ajv({
   removeAdditional: true,
   coerceTypes: true,
 });
 addFormats(responseValidator);
+responseValidator.addKeyword("kind");
+responseValidator.addKeyword("modifier");
 
 interface ValidatorOptions {
   data: unknown;
@@ -167,7 +173,8 @@ function pipeAsyncWithContext(...fns: NextApiRouterHandlerFn[]) {
     initCtx: Record<string, any> = {},
     request: NextApiRequest,
     response: NextApiResponse
-  ) => fns.reduce(async (prev, next) => {
+  ) =>
+    fns.reduce(async (prev, next) => {
       await prev;
       if (response.headersSent) {
         return Promise.resolve();
