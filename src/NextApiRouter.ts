@@ -16,9 +16,22 @@ interface NextApiHandlerWithSignatures extends NextApiHandler {
   getSignatures(): any;
 }
 
+type GlobalErrorHandler = (
+  error: any,
+  context: NextApiRouterHandlerFnCtx,
+  request: NextApiRequest,
+  response: NextApiResponse
+) => void;
+
 export class NextApiRouter {
+  static errorHandler?: GlobalErrorHandler;
+
   static create(): NextApiRouter {
     return new NextApiRouter();
+  }
+
+  static handleErrors(errorHandler: GlobalErrorHandler): void {
+    this.errorHandler = errorHandler;
   }
 
   private handlers = new NextApiRouterRegistry();
@@ -71,6 +84,10 @@ export class NextApiRouter {
     } catch (error) {
       if (this.events.listenerCount("error")) {
         this.events.emit("error", error, context, request, response);
+      }
+
+      if (typeof NextApiRouter.errorHandler === "function") {
+        return NextApiRouter.errorHandler(error, context, request, response);
       }
 
       if (isHttpError(error)) {
