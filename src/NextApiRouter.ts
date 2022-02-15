@@ -65,6 +65,10 @@ export class NextApiRouter {
     return this.register("delete", handlerOrHandlerOptions);
   }
 
+  options(): this {
+    return this.register("options", () => {});
+  }
+
   init(): NextApiHandlerWithSignatures {
     const handler = (request: NextApiRequest, response: NextApiResponse) =>
       this.run(request, response);
