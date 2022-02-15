@@ -11,7 +11,7 @@ Simple utility allowing to route API endpoints by http methods with middleware f
 * `#use(middleware): this` - adds a middleware to execution pipeline. Middleware is a function receiving arguments as follows:
   * `request: NextApiRequest` 
   * `response: NextApiResponse`
-* `#post(handler)`/`#get(handler)`/`#put(handler)`/`#patch(handler)`/`#delete(handler)` - adds a handler to requests with respective method. Handlers return value is sent as a response with status 200 unless response is already sent explicitly using Nextjs API. Handler is a function receiving arguments as follows:
+* `#post(handler)`/`#get(handler)`/`#put(handler)`/`#patch(handler)`/`#delete(handler)`/`#options()` - adds a handler to requests with respective method. Handlers return value is sent as a response with status 200 unless response is already sent explicitly using Nextjs API. Handler is a function receiving arguments as follows:
     * `request: NextApiRequest`
     * `response: NextApiResponse` 
 * `#init()` - initializer returning a Nextjs API handler which should exported by default from a Nextjs route endpoint file
