@@ -18,7 +18,9 @@ import type {
   EndpointSignature,
 } from "./types";
 
-const bodyValidator = new Ajv();
+const bodyValidator = new Ajv({
+  $data: true,
+});
 addFormats(bodyValidator);
 bodyValidator.addKeyword("kind");
 bodyValidator.addKeyword("modifier");
