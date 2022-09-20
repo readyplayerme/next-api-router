@@ -119,7 +119,11 @@ export class NextApiConfigurableHandler {
       return response;
     }
 
-    const data = cloneDeep(response);
+    let data = cloneDeep(response);
+
+    if (typeof data === "string") {
+      data = JSON.parse(data);
+    }
 
     tryToValidate({
       data,
