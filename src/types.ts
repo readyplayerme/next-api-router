@@ -4,7 +4,13 @@ import { AnySchema } from "ajv";
 import { NextApiRouterHandlerFnCtx } from "@readyplayerme/next-api-router";
 import type { NextApiConfigurableHandler } from "./NextApiConfigurableHandler";
 
-export type NextApiRouterMethod = "post" | "get" | "put" | "patch" | "delete" | "options";
+export type NextApiRouterMethod =
+  | "post"
+  | "get"
+  | "put"
+  | "patch"
+  | "delete"
+  | "options";
 
 export declare type NextApiRouterHandlerFn<T = any> = (
   this: NextApiRouterHandlerFnCtx,
