@@ -31,12 +31,12 @@
     "http-assert": "^1.5.0",
     "http-errors": "^1.8.0",
     "lodash": "^4.17.21",
-    "next": "^11.1.2"
+    "next": "^12.3.1"
   },
   "devDependencies": {
     "@commitlint/cli": "^13.1.0",
     "@commitlint/config-conventional": "^13.1.0",
-    "@commitlint/prompt-cli": "^13.1.0",
+    "@commitlint/prompt-cli": "^17.1.2",
     "@types/http-assert": "^1.5.3",
     "@types/http-errors": "^1.8.1",
     "@types/jest": "^27.0.1",
